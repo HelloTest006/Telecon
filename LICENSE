@@ -1,0 +1,29 @@
+COE multi-license notice
+========================
+
+This repository uses different licenses for different parts:
+
+1. Protocol specification (`docs/coe/`) and open protocol description
+   → Apache License 2.0 (see LICENSES/Apache-2.0.txt)
+
+2. Client / agent / libraries intended for device endpoints
+   (`cmd/coe-node`, `cmd/coe-cli`, `cmd/coe-keygen`, `internal/agent`,
+   `internal/p2p`, `internal/device`, `internal/crypto`, `internal/webrtcx`,
+   `internal/config`, `internal/tlsutil`, related scripts for agents)
+   → Apache License 2.0 (see LICENSES/Apache-2.0.txt)
+
+3. Server components that issue keys or relay signaling
+   (`cmd/ka`, `cmd/coe-signal`, `cmd/coe-admin`, `cmd/ka-check`,
+   `internal/kaapi`, `internal/signal`, Docker server images)
+   → GNU Affero General Public License v3.0 or later
+     (see LICENSES/AGPL-3.0.txt)
+
+When you distribute a combined binary that statically links AGPL server
+code with Apache libraries, the AGPL applies to that combined work as a
+whole if the AGPL-covered code is included. Prefer shipping servers and
+clients as separate artifacts (as this repo does).
+
+SPDX for the repo root default (if a tool requires a single tag):
+  LicenseRef-COE-Multi (Apache-2.0 AND AGPL-3.0-or-later by component)
+
+Full license texts: LICENSES/

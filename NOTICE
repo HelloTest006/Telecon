@@ -1,0 +1,11 @@
+COE — Communication over Encryption
+Copyright (c) COE contributors
+
+This product includes software developed for the COE project.
+
+Licensing summary: see LICENSE and LICENSES/
+
+Third-party components retain their own licenses (see go.mod / vendor notices),
+including but not limited to:
+  - golang.org/x/* (BSD-style)
+  - github.com/pion/* (MIT)

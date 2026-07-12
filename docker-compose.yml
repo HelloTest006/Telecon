@@ -1,0 +1,58 @@
+# Self-host COE Key Authority + signaling for your own devices.
+# Server components are AGPL-3.0. Spec/client code is Apache-2.0.
+#
+# Quick start:
+#   export COE_KA_ADMIN_TOKEN=$(openssl rand -hex 24)
+#   docker compose up -d --build
+#   docker compose exec ka /coe-admin -ka https://127.0.0.1:8443 -ka-insecure -admin-token "$COE_KA_ADMIN_TOKEN" voucher
+#
+# Then on a device:
+#   coe-node -device-id alice -enroll -voucher <code> -ka https://YOUR_HOST:8443 -ka-ca ka.crt
+
+services:
+  ka:
+    build:
+      context: .
+      target: ka
+    image: coe-ka:local
+    ports:
+      - "8443:8443"
+    environment:
+      COE_KA_LISTEN: "0.0.0.0:8443"
+      COE_KA_ADMIN_TOKEN: "${COE_KA_ADMIN_TOKEN:-change-me-in-prod}"
+      COE_KA_MASTER_FILE: /data/master.key
+      COE_KA_REGISTRY: /data/registry.json
+      COE_KA_TLS_CERT: /data/tls/server.crt
+      COE_KA_TLS_KEY: /data/tls/server.key
+      COE_KA_TLS_HOSTS: "${COE_KA_TLS_HOSTS:-localhost,127.0.0.1}"
+    volumes:
+      - ka-data:/data
+    command: ["-listen", "0.0.0.0:8443", "-rate-limit", "60"]
+    restart: unless-stopped
+
+  signal:
+    build:
+      context: .
+      target: signal
+    image: coe-signal:local
+    ports:
+      - "8450:8450"
+    environment:
+      COE_SIGNAL_LISTEN: "0.0.0.0:8450"
+    restart: unless-stopped
+
+  # Optional coturn for hard NAT (uncomment and set credentials)
+  # turn:
+  #   image: coturn/coturn:latest
+  #   network_mode: host
+  #   command:
+  #     - -n
+  #     - --log-file=stdout
+  #     - --fingerprint
+  #     - --lt-cred-mech
+  #     - --user=coe:changeme
+  #     - --realm=coe.local
+  #     - --listening-port=3478
+
+volumes:
+  ka-data:

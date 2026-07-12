@@ -1,0 +1,128 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build-binaries:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+
+      - name: Test
+        run: go test ./...
+
+      - name: Build Linux amd64 (servers + tools)
+        run: |
+          mkdir -p dist
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s -w" -o dist/ka-linux-amd64 ./cmd/ka
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s -w" -o dist/coe-signal-linux-amd64 ./cmd/coe-signal
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s -w" -o dist/ka-check-linux-amd64 ./cmd/ka-check
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s -w" -o dist/coe-admin-linux-amd64 ./cmd/coe-admin
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s -w" -o dist/coe-node-linux-amd64 ./cmd/coe-node
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s -w" -o dist/coe-cli-linux-amd64 ./cmd/coe-cli
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s -w" -o dist/coe-keygen-linux-amd64 ./cmd/coe-keygen
+
+      - name: Build Windows amd64 (client/agent)
+        run: |
+          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s -w" -o dist/coe-node-windows-amd64.exe ./cmd/coe-node
+          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s -w" -o dist/coe-cli-windows-amd64.exe ./cmd/coe-cli
+          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s -w" -o dist/coe-keygen-windows-amd64.exe ./cmd/coe-keygen
+          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-s -w" -o dist/ka-check-windows-amd64.exe ./cmd/ka-check
+
+      - name: Checksums
+        run: |
+          cd dist
+          sha256sum * > SHA256SUMS
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coe-binaries
+          path: dist/
+
+      - name: GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+          body: |
+            ## COE release
+
+            **Licenses**
+            - Protocol / client / agent: Apache-2.0
+            - Key Authority & signal server: AGPL-3.0-or-later
+
+            **Self-host servers**
+            ```bash
+            docker compose up -d --build
+            ```
+
+            **Windows agent**
+            Use `coe-node-windows-amd64.exe` + `scripts/install-agent.ps1` (user logon / DPAPI).
+
+  docker:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Image name
+        id: meta
+        run: |
+          echo "ka=ghcr.io/${{ github.repository_owner }}/coe-ka" >> $GITHUB_OUTPUT
+          echo "signal=ghcr.io/${{ github.repository_owner }}/coe-signal" >> $GITHUB_OUTPUT
+          echo "tag=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Build & push KA
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: ka
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.ka }}:${{ steps.meta.outputs.tag }}
+            ${{ steps.meta.outputs.ka }}:latest
+
+      - name: Build & push signal
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: signal
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.signal }}:${{ steps.meta.outputs.tag }}
+            ${{ steps.meta.outputs.signal }}:latest
+
+  ci:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'push' || !startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - run: go test ./...
+      - run: go build -o /dev/null ./cmd/...
