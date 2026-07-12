@@ -17,6 +17,7 @@ Protocol and architecture specification (v1 design).
 11. [10-selfhost](10-selfhost.md) — Docker KA + signal
 12. [11-vouchers](11-vouchers.md) — enroll without admin token
 13. [12-public-beta-checklist](12-public-beta-checklist.md) — upload readiness
+14. [../self-host-quickstart.md](../self-host-quickstart.md) — operator quickstart
 
 ## One-line summary
 
