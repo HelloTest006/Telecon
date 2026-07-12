@@ -1,0 +1,19 @@
+# Caddy reverse proxy for COE prod
+# DOMAIN=ka.example.com COE_KA_ADMIN_TOKEN=... docker compose -f docker-compose.prod.yml up
+
+{$DOMAIN:localhost} {
+    tls {
+        # auto or specify certs
+    }
+
+    # KA on 8443 -> /ka or direct
+    reverse_proxy /v1/* ka:8443
+
+    # signal on 8450
+    reverse_proxy /signal/* signal:8450
+
+    # simple health
+    respond /health 200 {
+        body "ok"
+    }
+}

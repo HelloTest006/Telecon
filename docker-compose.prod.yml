@@ -1,0 +1,69 @@
+# COE production self-host (TLS + strong auth + TURN)
+# Run: docker compose -f docker-compose.prod.yml up -d
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - ka
+      - signal
+
+  ka:
+    build:
+      context: .
+      target: ka
+    image: coe-ka:prod
+    restart: unless-stopped
+    environment:
+      COE_KA_LISTEN: "0.0.0.0:8443"
+      COE_KA_ADMIN_TOKEN: "${COE_KA_ADMIN_TOKEN:?strong-token-required}"
+      COE_KA_MASTER_FILE: /data/master.key
+      COE_KA_REGISTRY: /data/registry.json
+      COE_KA_TLS_CERT: ""  # handled by caddy
+      COE_KA_TLS_KEY: ""
+      COE_KA_TLS_HOSTS: "${DOMAIN:-localhost}"
+    volumes:
+      - ka_data:/data
+    command: ["-listen", "0.0.0.0:8443", "-prod", "-rate-limit", "60"]
+
+  signal:
+    build:
+      context: .
+      target: signal
+    image: coe-signal:prod
+    restart: unless-stopped
+    environment:
+      COE_SIGNAL_LISTEN: "0.0.0.0:8450"
+    command: ["-listen", "0.0.0.0:8450"]
+
+  # TURN for symmetric NAT
+  turn:
+    image: coturn/coturn:latest
+    restart: unless-stopped
+    command:
+      - -n
+      - --log-file=stdout
+      - --fingerprint
+      - --lt-cred-mech
+      - --user=${COE_TURN_USER:-coe}:${COE_TURN_PASS:-changeme-in-prod}
+      - --realm=${DOMAIN:-coe.local}
+      - --listening-port=3478
+      - --tls-listening-port=5349
+      - --min-port=49152
+      - --max-port=65535
+      - --external-ip=${EXTERNAL_IP:-auto}
+    network_mode: host
+    # or map ports if host mode not available
+
+volumes:
+  ka_data:
+  caddy_data:
+  caddy_config:
