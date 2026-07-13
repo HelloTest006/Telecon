@@ -30,6 +30,16 @@ Confidentiality requires secrecy of daily keys and device identity material. Key
 
 See [LICENSE](LICENSE), [LICENSES/](LICENSES/), [NOTICE](NOTICE).
 
+## Public beta
+
+Launch note + release notes: [ANNOUNCEMENT.md](ANNOUNCEMENT.md)  
+Release: https://github.com/HelloTest006/Telecon/releases/tag/v0.1.0-beta
+
+## Public beta
+
+Launch note + release notes: [ANNOUNCEMENT.md](ANNOUNCEMENT.md)  
+Release: https://github.com/HelloTest006/Telecon/releases/tag/v0.1.0-beta
+
 ## Fast path
 
 1. Operator deploys self-host stack: [docs/coe/10-selfhost.md](docs/coe/10-selfhost.md)
