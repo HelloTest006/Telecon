@@ -30,18 +30,27 @@ Rules:
 
 ## 2. Start stack
 
-For small beta, use:
+### Option A — Docker
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
-This starts:
+Starts: `ka`, `coe-signal`, `caddy`, optional `turn`.
 
-- `ka`
-- `coe-signal`
-- `caddy`
-- optional `turn`
+### Option B — No Docker (bare metal)
+
+Binaries + systemd (or Windows services). Full guide:
+
+**[self-host-bare-metal.md](self-host-bare-metal.md)**
+
+Short form:
+
+```bash
+export COE_KA_ADMIN_TOKEN=$(openssl rand -hex 24)
+./ka -listen 0.0.0.0:8443 -admin-token "$COE_KA_ADMIN_TOKEN" -rate-limit 60
+./coe-signal -listen 0.0.0.0:8450
+```
 
 ## 3. Validate deployment
 

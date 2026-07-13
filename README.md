@@ -95,6 +95,7 @@ Uses **user logon** Task Scheduler so DPAPI-protected keys open correctly. Do no
 
 - spec index: [docs/coe/README.md](docs/coe/README.md)
 - self-host quickstart: [docs/self-host-quickstart.md](docs/self-host-quickstart.md)
+- self-host **without Docker**: [docs/self-host-bare-metal.md](docs/self-host-bare-metal.md)
 - beta scope: [BETA_SCOPE.md](BETA_SCOPE.md)
 - self-host security: [SECURITY_SELFHOST.md](SECURITY_SELFHOST.md)
 - production KA checks: [docs/coe/08-prod-ka-checklist.md](docs/coe/08-prod-ka-checklist.md)

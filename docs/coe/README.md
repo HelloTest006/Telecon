@@ -18,19 +18,20 @@ Protocol and architecture specification (v1 design).
 12. [11-vouchers](11-vouchers.md) — enroll without admin token
 13. [12-public-beta-checklist](12-public-beta-checklist.md) — upload readiness
 14. [../self-host-quickstart.md](../self-host-quickstart.md) — operator quickstart
+15. [../self-host-bare-metal.md](../self-host-bare-metal.md) — self-host without Docker
 
 ## One-line summary
 
-Devices pull a **daily general key** from a central Key Authority once per 24h epoch. **Message content never touches the server** — peers talk direct TCP/UDP with AEAD under session keys derived from daily material + long-term identity ECDH.
+Devices pull a **daily general key** from an **operator-run** Key Authority once per 24h epoch. **Message content never touches the key server** — peers talk direct TCP/UDP/WebRTC with AEAD under session keys derived from daily material + long-term identity ECDH. Project does not host shared KA.
 
 ## Status
 
 | Item | Status |
 |------|--------|
 | Protocol + architecture spec | This tree |
-| Runnable server/clients | Not in scope of this deliverable |
-| Stack (future) | Go |
-| P2P (v1) | Direct TCP (primary), UDP datagram profile optional |
+| Runnable servers/clients | `cmd/*` + release binaries |
+| Stack | Go |
+| P2P (v1) | TCP primary; WebRTC + optional UDP |
 
 ## Profiles
 

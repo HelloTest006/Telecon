@@ -10,6 +10,7 @@ Status at upload time.
 - [x] Voucher-based enroll flow (`coe-admin voucher`, `coe-node -enroll -voucher ...`)
 - [x] WebRTC path with signaling server (`coe-signal`) and TURN/STUN config hooks
 - [x] Self-host docs + Docker (`Dockerfile`, `docker-compose.yml`)
+- [x] Bare-metal self-host guide (`docs/self-host-bare-metal.md`)
 - [x] `ka-check` automated production checks
 - [x] CI / release workflow files under `.github/workflows/`
 - [x] License split documented (`LICENSE`, `LICENSES/`, `NOTICE`)
@@ -21,15 +22,15 @@ Status at upload time.
 - [x] `scripts/smoke-agent.ps1`
 - [x] `scripts/smoke-webrtc.ps1`
 
-## Manual ops gates before broad public beta
+## Manual ops gates (operator — project does not host KA)
 
-- [ ] Hosted KA on real domain with non-default admin token
-- [ ] Public CA or org CA for KA and signal TLS
+- [ ] Operator deploys own KA (Docker or [bare metal](../self-host-bare-metal.md))
+- [ ] Non-default admin token + TLS
 - [ ] Backup/restore drill for `KA_MASTER` and registry
-- [ ] TURN reachable from target networks
-- [ ] Signed Windows binaries / installer package
-- [ ] Terms, privacy, support contact, issue template
-- [ ] Beta announcement copy uses honest security claims
+- [ ] TURN if peers off-LAN
+- [ ] Signed Windows binaries (optional; beta may ship unsigned + SHA256)
+- [x] Terms, privacy, issue templates
+- [x] Beta announcement + self-host-only positioning
 
 ## Recommended first public-beta runbook
 

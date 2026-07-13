@@ -8,8 +8,10 @@
 - voucher-based enroll flow
 - WebRTC peer path with STUN/TURN config hooks
 - Docker self-host files
+- Bare-metal (no Docker) self-host guide
 - `ka-check` production validation tool
 - GitHub release and release assets
+- Public beta announcement (`ANNOUNCEMENT.md`)
 
 ## Compatibility note
 

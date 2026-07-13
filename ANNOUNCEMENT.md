@@ -35,7 +35,7 @@ Full threat model: [docs/coe/01-threat-model.md](docs/coe/01-threat-model.md).
 ## How to try it
 
 1. Read [docs/self-host-quickstart.md](docs/self-host-quickstart.md)
-2. Deploy `ka` + `coe-signal` (Docker or binaries)
+2. Deploy `ka` + `coe-signal` ([Docker](docs/coe/10-selfhost.md) or [bare metal](docs/self-host-bare-metal.md))
 3. Run `ka-check` against your deployment
 4. Mint a voucher with `coe-admin`
 5. Install Windows agent with `scripts/install-agent.ps1`
@@ -79,6 +79,7 @@ See [LICENSE](LICENSE) and [LICENSES/](LICENSES/).
 - `coe-signal` for SDP/ICE only
 - `ka-check` deployment checker
 - Docker images / compose for self-host
+- Bare-metal self-host guide (no Docker)
 - CI and release workflows
 
 ## Binaries (GitHub release assets)

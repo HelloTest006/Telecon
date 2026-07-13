@@ -1,6 +1,13 @@
 # Self-host KA + signal
 
-Run your own Key Authority for your devices. **Server code is AGPL-3.0-or-later.**
+Run your own Key Authority for your devices. **Server code is AGPL-3.0-or-later.**  
+Project does **not** host shared auth/key servers — each operator runs their own.
+
+| Path | Doc |
+|------|-----|
+| Docker | this file |
+| Bare metal (no Docker) | [../self-host-bare-metal.md](../self-host-bare-metal.md) |
+| Operator quickstart | [../self-host-quickstart.md](../self-host-quickstart.md) |
 
 ## Docker Compose
 
