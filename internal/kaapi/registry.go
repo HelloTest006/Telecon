@@ -134,6 +134,17 @@ func (r *Registry) Get(deviceID string) *DeviceRecord {
 	return r.Devices[deviceID]
 }
 
+// ListDevices returns a snapshot of enrolled devices (for admin UI).
+func (r *Registry) ListDevices() []DeviceRecord {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	out := make([]DeviceRecord, 0, len(r.Devices))
+	for _, d := range r.Devices {
+		out = append(out, *d)
+	}
+	return out
+}
+
 func (r *Registry) Revoke(deviceID string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()

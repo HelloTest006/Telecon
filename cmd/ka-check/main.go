@@ -42,6 +42,8 @@ func main() {
 	registry := flag.String("registry", "", "optional: local registry.json path")
 	jsonOut := flag.Bool("json", false, "machine-readable JSON")
 	timeout := flag.Duration("timeout", 10*time.Second, "HTTP timeout")
+	stun := flag.String("stun", envOr("COE_STUN", "stun:stun.l.google.com:19302"), "STUN host for UDP reachability (host:port or stun:host:port); empty=skip")
+	turn := flag.String("turn", envOr("COE_TURN_URLS", ""), "TURN host for UDP reachability (turn:host:port or host:port); empty=skip")
 	flag.Parse()
 
 	var results []checkResult
@@ -197,8 +199,19 @@ func main() {
 		results = append(results, checkRegistry(*registry)...)
 	}
 
-	// --- Plain HTTP port warning: try same host :80 ---
-	// skipped — not reliable
+	// --- ICE helpers (UDP reachability; not full STUN protocol) ---
+	if *stun != "" {
+		results = append(results, checkUDPEndpoint("stun_udp", *stun, *timeout)...)
+	} else {
+		results = append(results, ok("stun_udp", sevInfo, "skipped (pass -stun)"))
+	}
+	if *turn != "" {
+		// first URL only if comma-separated
+		first := strings.Split(*turn, ",")[0]
+		results = append(results, checkUDPEndpoint("turn_udp", first, *timeout)...)
+	} else {
+		results = append(results, ok("turn_udp", sevInfo, "skipped (pass -turn or COE_TURN_URLS)"))
+	}
 
 	reqFail := 0
 	warns := 0
@@ -312,4 +325,29 @@ func envOr(k, d string) string {
 		return v
 	}
 	return d
+}
+
+// checkUDPEndpoint tries UDP dial to host:port extracted from stun:/turn: URL.
+// Warning-level only: many NATs block outbound probes differently than WebRTC.
+func checkUDPEndpoint(id, raw string, timeout time.Duration) []checkResult {
+	hostPort := strings.TrimSpace(raw)
+	hostPort = strings.TrimPrefix(hostPort, "stuns:")
+	hostPort = strings.TrimPrefix(hostPort, "stun:")
+	hostPort = strings.TrimPrefix(hostPort, "turns:")
+	hostPort = strings.TrimPrefix(hostPort, "turn:")
+	if i := strings.Index(hostPort, "?"); i >= 0 {
+		hostPort = hostPort[:i]
+	}
+	if !strings.Contains(hostPort, ":") {
+		hostPort += ":3478"
+	}
+	conn, err := net.DialTimeout("udp", hostPort, timeout)
+	if err != nil {
+		return []checkResult{fail(id, sevWarn, "udp dial %s: %v", hostPort, err)}
+	}
+	_ = conn.SetDeadline(time.Now().Add(timeout))
+	// send minimal non-empty datagram; STUN servers often ignore invalid packets but path opens
+	_, _ = conn.Write([]byte{0, 1, 0, 0})
+	_ = conn.Close()
+	return []checkResult{ok(id, sevWarn, "udp path open to %s (not full STUN/TURN handshake)", hostPort)}
 }

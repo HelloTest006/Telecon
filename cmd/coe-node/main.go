@@ -280,15 +280,26 @@ func serveP2P(addr string, hub *agent.Hub) {
 }
 
 func issueKey(client *kaapi.Client, cfg config.NodeConfig) (kaapi.IssueResponse, error) {
+	// optional pre-sync from health for large skew
+	if h, err := client.Health(); err == nil && h.Time > 0 {
+		device.ApplyKATime(h.Time)
+	}
 	nonce := make([]byte, 16)
 	_, _ = rand.Read(nonce)
-	return client.IssueKey(kaapi.IssueRequest{
+	resp, err := client.IssueKey(kaapi.IssueRequest{
 		DeviceID:   cfg.DeviceID,
 		EpochHint:  device.CurrentEpoch(),
 		Nonce:      nonce,
-		ClientTime: time.Now().UTC().Unix(),
+		ClientTime: device.CorrectedNow().UTC().Unix(),
 		Profile:    cfg.Profile,
 	})
+	if err != nil {
+		return resp, err
+	}
+	if resp.KATime > 0 {
+		device.ApplyKATime(resp.KATime)
+	}
+	return resp, nil
 }
 
 func loadConfig(cfgPath, deviceID, identity, store, ka, listen, api, apiTok, admin string) config.NodeConfig {

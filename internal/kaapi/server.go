@@ -15,8 +15,9 @@ import (
 
 // Server is the Key Authority HTTP API.
 type Server struct {
-	Master   []byte
-	Registry *Registry
+	Master []byte
+	// Registry is JSON or SQLite store.
+	Registry Store
 	XO       *coecrypto.Xoroshiro128pp
 	Audit    *Auditor
 	AdminTok string
@@ -59,6 +60,9 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("POST /v1/vouchers", s.handleCreateVoucher)
 	mux.HandleFunc("GET /v1/vouchers", s.handleListVouchers)
 	mux.HandleFunc("POST /v1/vouchers/revoke", s.handleRevokeVoucher)
+	mux.HandleFunc("GET /v1/devices", s.handleListDevices)
+	mux.HandleFunc("GET /admin", s.handleAdminUI)
+	mux.HandleFunc("GET /admin/", s.handleAdminUI)
 	return mux
 }
 
@@ -396,4 +400,32 @@ func (s *Server) handleRevoke(w http.ResponseWriter, r *http.Request) {
 	}
 	s.Audit.Log(AuditEvent{Endpoint: "/v1/revoke", DeviceID: req.DeviceID, ResultCode: 200, SrcIP: r.RemoteAddr})
 	s.writeJSON(w, 200, map[string]any{"device_id": req.DeviceID, "revoked": true})
+}
+
+func (s *Server) handleListDevices(w http.ResponseWriter, r *http.Request) {
+	if !s.adminOK(r) {
+		s.writeErr(w, 401, "unauthorized")
+		return
+	}
+	devs := s.Registry.ListDevices()
+	// strip large key material from list view optional — keep pk for operator debug
+	type row struct {
+		DeviceID          string `json:"device_id"`
+		OrgID             string `json:"org_id,omitempty"`
+		Label             string `json:"label,omitempty"`
+		EnrollmentCounter uint32 `json:"enrollment_counter"`
+		Profile           string `json:"profile"`
+		Revoked           bool   `json:"revoked"`
+		LastSerial        uint64 `json:"last_serial,omitempty"`
+		IssuedEpoch       uint64 `json:"issued_epoch,omitempty"`
+	}
+	out := make([]row, 0, len(devs))
+	for _, d := range devs {
+		out = append(out, row{
+			DeviceID: d.DeviceID, OrgID: d.OrgID, Label: d.Label,
+			EnrollmentCounter: d.EnrollmentCounter, Profile: d.Profile, Revoked: d.Revoked,
+			LastSerial: d.LastSerial, IssuedEpoch: d.IssuedEpoch,
+		})
+	}
+	s.writeJSON(w, 200, map[string]any{"devices": out})
 }

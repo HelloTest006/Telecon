@@ -35,14 +35,36 @@ See [LICENSE](LICENSE), [LICENSES/](LICENSES/), [NOTICE](NOTICE).
 Launch note + release notes: [ANNOUNCEMENT.md](ANNOUNCEMENT.md)  
 Release: https://github.com/HelloTest006/Telecon/releases/tag/v0.1.0-beta
 
-## Public beta
+## Roadmap (beta → production)
 
-Launch note + release notes: [ANNOUNCEMENT.md](ANNOUNCEMENT.md)  
-Release: https://github.com/HelloTest006/Telecon/releases/tag/v0.1.0-beta
+Self-hosted only end-to-end. Project never hosts shared auth/key/relay for users.
+
+### Phase 1 — Beta hardening *(done in tree)*
+- Clock skew correction on agents via KA time (`ApplyKATime`)
+- `ka-check` STUN/TURN UDP reachability probes (`-stun`, `-turn`)
+- Structured audit log file: `ka -audit-file path.jsonl`
+
+### Phase 2 — Operator infrastructure *(partial)*
+- Registry backend: JSON (default) or **SQLite** (`ka -sqlite data/ka/registry.db`)
+- Minimal admin web UI: **`/admin`** (vouchers, devices, revoke)
+- Still open: PostgreSQL option, agent update check / signed manifests
+
+### Phase 3 — Client UX and transport
+- System tray GUI over local API
+- Better ICE / TURN selection for hard NAT
+- macOS/Linux logon-agent parity with Windows
+
+### Phase 4 — Production release (“finished product”)
+- Third-party crypto review
+- Code-signed Windows (and later macOS) binaries
+- Protocol v1 wire format freeze + compatibility promise
+- Mobile SDK only after desktop production bar met
+
+See also: [BETA_SCOPE.md](BETA_SCOPE.md), [COMPATIBILITY.md](COMPATIBILITY.md), [CHANGELOG.md](CHANGELOG.md).
 
 ## Fast path
 
-1. Operator deploys self-host stack: [docs/coe/10-selfhost.md](docs/coe/10-selfhost.md)
+1. Operator deploys self-host stack: [docs/coe/10-selfhost.md](docs/coe/10-selfhost.md) or [docs/self-host-bare-metal.md](docs/self-host-bare-metal.md)
 2. Operator validates deployment: [docs/coe/08-prod-ka-checklist.md](docs/coe/08-prod-ka-checklist.md)
 3. Operator mints voucher: `coe-admin voucher`
 4. User installs Windows agent: `scripts/install-agent.ps1`

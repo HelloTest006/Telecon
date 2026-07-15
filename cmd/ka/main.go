@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -22,7 +23,8 @@ import (
 func main() {
 	listen := flag.String("listen", envOr("COE_KA_LISTEN", "127.0.0.1:8443"), "listen address")
 	masterFile := flag.String("master", envOr("COE_KA_MASTER_FILE", "data/ka/master.key"), "KA_MASTER file")
-	registry := flag.String("registry", envOr("COE_KA_REGISTRY", "data/ka/registry.json"), "device registry path")
+	registry := flag.String("registry", envOr("COE_KA_REGISTRY", "data/ka/registry.json"), "JSON registry path (ignored if -sqlite set)")
+	sqlitePath := flag.String("sqlite", envOr("COE_KA_SQLITE", ""), "SQLite registry path (e.g. data/ka/registry.db); preferred for multi-device")
 	adminTok := flag.String("admin-token", envOr("COE_KA_ADMIN_TOKEN", "dev-admin-token"), "admin bearer token")
 	tlsCert := flag.String("tls-cert", envOr("COE_KA_TLS_CERT", "data/ka/tls/server.crt"), "TLS cert PEM")
 	tlsKey := flag.String("tls-key", envOr("COE_KA_TLS_KEY", "data/ka/tls/server.key"), "TLS key PEM")
@@ -30,6 +32,7 @@ func main() {
 	noSig := flag.Bool("no-require-sig", false, "allow unsigned issue (legacy only)")
 	rateLimit := flag.Int("rate-limit", 60, "max enroll/issue requests per IP per minute (0=off)")
 	prod := flag.Bool("prod", false, "production mode: require non-default admin token, rate limit on")
+	auditFile := flag.String("audit-file", envOr("COE_KA_AUDIT_FILE", ""), "append JSON audit lines to file (empty=stdout only)")
 	flag.Parse()
 
 	if *prod {
@@ -45,9 +48,24 @@ func main() {
 	if err != nil {
 		log.Fatalf("master: %v", err)
 	}
-	reg, err := kaapi.LoadRegistry(*registry)
-	if err != nil {
-		log.Fatalf("registry: %v", err)
+	var store kaapi.Store
+	if *sqlitePath != "" {
+		if err := os.MkdirAll(filepath.Dir(*sqlitePath), 0o700); err != nil {
+			log.Fatalf("sqlite dir: %v", err)
+		}
+		sqlStore, err := kaapi.OpenSQLStore(*sqlitePath)
+		if err != nil {
+			log.Fatalf("sqlite: %v", err)
+		}
+		store = sqlStore
+		log.Printf("registry backend sqlite %s", *sqlitePath)
+	} else {
+		reg, err := kaapi.LoadRegistry(*registry)
+		if err != nil {
+			log.Fatalf("registry: %v", err)
+		}
+		store = reg
+		log.Printf("registry backend json %s", *registry)
 	}
 	xo, err := coecrypto.NewXoroshiroFromMaster(master)
 	if err != nil {
@@ -59,11 +77,23 @@ func main() {
 		lim = kaapi.NewRateLimiter(*rateLimit, time.Minute)
 	}
 
+	auditW := io.Writer(os.Stdout)
+	if *auditFile != "" {
+		if err := os.MkdirAll(filepath.Dir(*auditFile), 0o700); err != nil {
+			log.Fatalf("audit dir: %v", err)
+		}
+		f, err := os.OpenFile(*auditFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
+		if err != nil {
+			log.Fatalf("audit file: %v", err)
+		}
+		auditW = io.MultiWriter(os.Stdout, f)
+		log.Printf("audit log file %s", *auditFile)
+	}
 	srv := &kaapi.Server{
 		Master:            master,
-		Registry:          reg,
+		Registry:          store,
 		XO:                xo,
-		Audit:             kaapi.NewAuditor(os.Stdout),
+		Audit:             kaapi.NewAuditor(auditW),
 		AdminTok:          *adminTok,
 		RequireSignature:  !*noSig,
 		RequireAdminToken: *prod,
