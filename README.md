@@ -49,10 +49,10 @@ Self-hosted only end-to-end. Project never hosts shared auth/key/relay for users
 - Minimal admin web UI: **`/admin`** (vouchers, devices, revoke)
 - Agent update check: `GET /v1/update/check` + `-update-manifest` (log-only on agent; signing later)
 
-### Phase 3 — Client UX and transport
-- System tray GUI over local API
-- Better ICE / TURN selection for hard NAT
-- macOS/Linux logon-agent parity with Windows
+### Phase 3 — Client UX and transport *(done in tree)*
+- Desktop UI: `coe-tray` (browser UI over local agent API)
+- ICE: multi-STUN, `COE_ICE_POLICY=all|relay`, env auto-apply
+- Linux user systemd + macOS LaunchAgent install scripts
 
 ### Phase 4 — Production release (“finished product”)
 - Third-party crypto review
@@ -99,13 +99,31 @@ docker compose exec ka /coe-admin -ka https://127.0.0.1:8443 -ka-insecure \
 
 Need real TLS + TURN for wider internet beta. See [docs/coe/10-selfhost.md](docs/coe/10-selfhost.md).
 
-## Desktop agent (Windows)
+## Desktop agent
+
+**Windows** (Task Scheduler / DPAPI-safe):
 
 ```powershell
 .\scripts\install-agent.ps1 -DeviceId alice -KaUrl https://ka.example.com -KaCa C:\path\ka.crt -Voucher $code -StartNow
 ```
 
-Uses **user logon** Task Scheduler so DPAPI-protected keys open correctly. Do not run as LocalSystem for real installs.
+**Linux** (systemd user unit):
+
+```bash
+./scripts/install-agent-linux.sh -d alice -k https://ka.example.com -c /path/ka.crt -v "$code" -e
+```
+
+**macOS** (LaunchAgent):
+
+```bash
+./scripts/install-agent-macos.sh -d alice -k https://ka.example.com -c /path/ka.crt -v "$code" -e
+```
+
+**UI** (agent must be running):
+
+```text
+coe-tray -api http://127.0.0.1:7701 -token SECRET
+```
 
 ## Release assets
 

@@ -19,32 +19,21 @@ type Config struct {
 	TURNURLs []string
 	TURNUser string
 	TURNPass string
-}
-
-func defaultSTUN(s []string) []string {
-	if len(s) == 0 {
-		return []string{"stun:stun.l.google.com:19302"}
-	}
-	return s
+	// Policy: all (default) or relay (TURN-only when TURN configured)
+	Policy ICEPolicy
 }
 
 func newPC(cfg Config) (*webrtc.PeerConnection, error) {
-	var ice []webrtc.ICEServer
-	for _, s := range defaultSTUN(cfg.STUN) {
-		ice = append(ice, webrtc.ICEServer{URLs: []string{s}})
-	}
-	if len(cfg.TURNURLs) > 0 {
-		ice = append(ice, webrtc.ICEServer{
-			URLs:       cfg.TURNURLs,
-			Username:   cfg.TURNUser,
-			Credential: cfg.TURNPass,
-		})
-	}
-	return webrtc.NewPeerConnection(webrtc.Configuration{ICEServers: ice})
+	ApplyEnv(&cfg)
+	return webrtc.NewPeerConnection(webrtc.Configuration{
+		ICEServers:         buildICEServers(cfg),
+		ICETransportPolicy: iceTransportPolicy(cfg),
+	})
 }
 
 // Dial initiates WebRTC to peer via signaling (this side creates offer).
 func Dial(cfg Config) (*DCConn, error) {
+	ApplyEnv(&cfg)
 	sc := signal.NewClient(cfg.SignalURL, cfg.LocalID)
 	room := signal.RoomID(cfg.LocalID, cfg.PeerID)
 
@@ -135,6 +124,7 @@ func Dial(cfg Config) (*DCConn, error) {
 
 // Accept waits for offer from peer and answers.
 func Accept(cfg Config, wait time.Duration) (*DCConn, error) {
+	ApplyEnv(&cfg)
 	sc := signal.NewClient(cfg.SignalURL, cfg.LocalID)
 	room := signal.RoomID(cfg.LocalID, cfg.PeerID)
 

@@ -14,6 +14,12 @@
 - `GET /v1/devices` admin list
 - Agent update check: `GET /v1/update/check` + `ka -update-manifest file.json` (unsigned beta; agent logs only)
 
+### Phase 3 — client UX and transport
+- `coe-tray` local desktop UI (opens browser; proxies to coe-node API)
+- WebRTC ICE: multi-STUN defaults, `COE_ICE_POLICY=all|relay`, env fill-in
+- Linux: `scripts/install-agent-linux.sh` (systemd --user)
+- macOS: `scripts/install-agent-macos.sh` (LaunchAgent)
+
 ## v0.1.0-beta
 
 - COE protocol spec published
