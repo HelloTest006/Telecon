@@ -139,9 +139,19 @@ SHA256: 45D1CAD48EF6E809182C5AEC74A5E0FD12CFF3012FD86774E99B017E0E12EB1B
 - Records: ChaCha20-Poly1305
 - Xoroshiro-128++: non-secret tickets only
 
+## Protocol v1 freeze
+
+As of **`v0.1.0-beta`**, P2P framing, record types, AEAD suite, HKDF labels, and the listed KA HTTP v1 endpoints are **frozen**.
+
+- Contract: [docs/coe/PROTOCOL_V1_FREEZE.md](docs/coe/PROTOCOL_V1_FREEZE.md)
+- Compatibility: [COMPATIBILITY.md](COMPATIBILITY.md)
+
+Breaking wire changes require **protocol v2**. Product/UI may still evolve.
+
 ## Upgrade
 
-Beta family only: match agent and KA to same beta line. No long-term stability promise yet.
+Match agent and KA on the same release line for best results.  
+Protocol v1 interop is the compatibility promise; experimental admin/tray features may change.
 
 ## Links
 

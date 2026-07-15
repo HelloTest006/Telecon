@@ -2,6 +2,9 @@
 
 ## Unreleased (post v0.1.0-beta)
 
+### Phase 4 (partial)
+- Protocol v1 wire/crypto freeze documented and bound to `v0.1.0-beta`
+
 ### Phase 1 — beta hardening
 - Agent clock offset from KA `health` / `ka_time` (reduce issue clock_skew)
 - `ka-check -stun` / `-turn` UDP path probes
@@ -23,6 +26,7 @@
 ## v0.1.0-beta
 
 - COE protocol spec published
+- **Protocol v1 FROZEN** — [docs/coe/PROTOCOL_V1_FREEZE.md](docs/coe/PROTOCOL_V1_FREEZE.md)
 - desktop Windows agent with DPAPI key protection
 - self-host Key Authority and signaling server
 - voucher-based enroll flow
@@ -32,7 +36,10 @@
 - `ka-check` production validation tool
 - GitHub release and release assets
 - Public beta announcement (`ANNOUNCEMENT.md`)
+- Phase 1–3 product features (hardening, SQLite/Postgres admin UI, tray, multi-OS agents)
 
 ## Compatibility note
 
-Beta release. Breaking changes may happen between beta tags.
+**Protocol v1** wire/crypto surface is frozen as of this tag.  
+Product/UX may still change. Breaking wire changes require **protocol v2**.  
+See [COMPATIBILITY.md](COMPATIBILITY.md).

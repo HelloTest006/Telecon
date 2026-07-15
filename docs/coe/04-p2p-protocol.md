@@ -1,5 +1,7 @@
 # COE P2P Protocol
 
+**Protocol v1 FROZEN** (`v0.1.0-beta`). See [PROTOCOL_V1_FREEZE.md](PROTOCOL_V1_FREEZE.md).
+
 Device ↔ device communication. **No Key Authority on this path.**
 
 ## Transports

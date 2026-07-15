@@ -55,10 +55,10 @@ Self-hosted only end-to-end. Project never hosts shared auth/key/relay for users
 - Linux user systemd + macOS LaunchAgent install scripts
 
 ### Phase 4 — Production release (“finished product”)
-- Third-party crypto review
-- Code-signed Windows (and later macOS) binaries
-- Protocol v1 wire format freeze + compatibility promise
-- Mobile SDK only after desktop production bar met
+- **Protocol v1 freeze** — done at `v0.1.0-beta` ([docs/coe/PROTOCOL_V1_FREEZE.md](docs/coe/PROTOCOL_V1_FREEZE.md))
+- Third-party crypto review (open)
+- Code-signed Windows (and later macOS) binaries (open)
+- Mobile SDK only after remaining production bar met
 
 See also: [BETA_SCOPE.md](BETA_SCOPE.md), [COMPATIBILITY.md](COMPATIBILITY.md), [CHANGELOG.md](CHANGELOG.md).
 

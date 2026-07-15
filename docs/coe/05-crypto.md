@@ -1,5 +1,7 @@
 # COE Cryptography
 
+**Protocol v1 FROZEN** (`v0.1.0-beta`). See [PROTOCOL_V1_FREEZE.md](PROTOCOL_V1_FREEZE.md).
+
 ## Algorithm suite (v1)
 
 | Role | Algorithm |

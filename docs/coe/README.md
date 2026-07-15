@@ -1,9 +1,12 @@
 # COE — Communication over Encryption
 
-Protocol and architecture specification (v1 design).
+Protocol and architecture specification (**v1 FROZEN** at `v0.1.0-beta`).
+
+**Freeze contract:** [PROTOCOL_V1_FREEZE.md](PROTOCOL_V1_FREEZE.md)
 
 ## Reading order
 
+0. [PROTOCOL_V1_FREEZE](PROTOCOL_V1_FREEZE.md) — wire freeze / interop promise  
 1. [00-overview](00-overview.md) — goals, non-goals, architecture
 2. [01-threat-model](01-threat-model.md) — adversaries, assumptions, residual risk
 3. [02-key-management](02-key-management.md) — hybrid keys, Xoroshiro boundary, issuance
@@ -28,6 +31,7 @@ Devices pull a **daily general key** from an **operator-run** Key Authority once
 
 | Item | Status |
 |------|--------|
+| Protocol v1 wire/crypto | **FROZEN** (`v0.1.0-beta`) |
 | Protocol + architecture spec | This tree |
 | Runnable servers/clients | `cmd/*` + release binaries |
 | Stack | Go |
