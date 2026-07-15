@@ -10,6 +10,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -21,6 +22,9 @@ import (
 	"github.com/telecon/coe/internal/p2p"
 	"github.com/telecon/coe/internal/tlsutil"
 )
+
+// Set via -ldflags "-X main.version=..."
+var version = "0.1.0-beta"
 
 func main() {
 	cfgPath := flag.String("config", "", "node config JSON")
@@ -189,6 +193,7 @@ func runAgent(cfg config.NodeConfig, enroll bool, peer, message string) {
 			Token:    cfg.APIToken,
 			Status: func() map[string]any {
 				return map[string]any{
+					"version":    version,
 					"epoch_id":   epochMeta.EpochID,
 					"key_serial": epochMeta.KeySerial,
 					"profile":    epochMeta.Profile,
@@ -205,6 +210,27 @@ func runAgent(cfg config.NodeConfig, enroll bool, peer, message string) {
 			}
 		}()
 	}
+
+	// update check (log only in beta; no auto-download)
+	go func() {
+		check := func() {
+			u, err := client.CheckUpdate(version, runtime.GOOS, runtime.GOARCH)
+			if err != nil {
+				log.Printf("update check: %v", err)
+				return
+			}
+			if u.UpdateAvailable {
+				log.Printf("update available: current=%s latest=%s forced=%v url=%s notes=%s",
+					u.Current, u.Latest, u.Forced, u.DownloadURL, u.Notes)
+			}
+		}
+		check()
+		t := time.NewTicker(12 * time.Hour)
+		defer t.Stop()
+		for range t.C {
+			check()
+		}
+	}()
 
 	go func() {
 		t := time.NewTicker(1 * time.Hour)

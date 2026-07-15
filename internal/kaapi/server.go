@@ -29,6 +29,8 @@ type Server struct {
 	TLSActive bool
 	// Limit optional rate limiter (wrapped by HandlerWithLimit).
 	Limit *RateLimiter
+	// Updates optional agent update manifest hub.
+	Updates *UpdateHub
 }
 
 func (s *Server) writeJSON(w http.ResponseWriter, code int, v any) {
@@ -63,6 +65,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /v1/devices", s.handleListDevices)
 	mux.HandleFunc("GET /admin", s.handleAdminUI)
 	mux.HandleFunc("GET /admin/", s.handleAdminUI)
+	mux.HandleFunc("GET /v1/update/check", s.handleUpdateCheck)
 	return mux
 }
 

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/telecon/coe/internal/device"
@@ -158,4 +159,17 @@ func (c *Client) Status() (StatusResponse, error) {
 func (c *Client) Revoke(deviceID, reason string) error {
 	_, err := c.doJSON(http.MethodPost, "/v1/revoke", RevokeRequest{DeviceID: deviceID, Reason: reason}, &map[string]any{}, true)
 	return err
+}
+
+// CheckUpdate polls GET /v1/update/check.
+func (c *Client) CheckUpdate(current, osName, arch string) (UpdateCheckResponse, error) {
+	q := "/v1/update/check?current=" + urlQueryEscape(current) + "&os=" + urlQueryEscape(osName) + "&arch=" + urlQueryEscape(arch)
+	var out UpdateCheckResponse
+	_, err := c.doJSON(http.MethodGet, q, nil, &out, false)
+	return out, err
+}
+
+func urlQueryEscape(s string) string {
+	r := strings.NewReplacer(" ", "%20", "+", "%2B")
+	return r.Replace(s)
 }

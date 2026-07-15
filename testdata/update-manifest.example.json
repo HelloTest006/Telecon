@@ -1,0 +1,9 @@
+{
+  "latest": "0.1.0-beta",
+  "min_version": "0.1.0-beta",
+  "notes": "Public beta. Self-host only. Check GitHub releases.",
+  "channels": {
+    "windows-amd64": "https://github.com/HelloTest006/Telecon/releases/download/v0.1.0-beta/coe-node-windows-amd64.exe",
+    "linux-amd64": "https://github.com/HelloTest006/Telecon/releases/download/v0.1.0-beta/coe-node-linux-amd64"
+  }
+}

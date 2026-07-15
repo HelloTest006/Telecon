@@ -9,20 +9,10 @@
 
 ### Phase 2 — operator infrastructure
 - SQLite registry: `ka -sqlite path.db` (JSON file still default)
+- PostgreSQL registry: `ka -postgres 'postgres://...'`
 - Admin UI at `/admin` (vouchers, devices, revoke)
 - `GET /v1/devices` admin list
-
-## Unreleased (post v0.1.0-beta)
-
-### Phase 1 — beta hardening
-- Agent clock offset from KA `health` / `ka_time` (reduce issue clock_skew)
-- `ka-check -stun` / `-turn` UDP path probes
-- `ka -audit-file` JSONL audit export (stdout + file)
-
-### Phase 2 — operator infrastructure
-- SQLite registry: `ka -sqlite path.db` (JSON file still default)
-- Admin UI at `/admin` (vouchers, devices, revoke)
-- `GET /v1/devices` admin list
+- Agent update check: `GET /v1/update/check` + `ka -update-manifest file.json` (unsigned beta; agent logs only)
 
 ## v0.1.0-beta
 

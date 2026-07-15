@@ -44,10 +44,10 @@ Self-hosted only end-to-end. Project never hosts shared auth/key/relay for users
 - `ka-check` STUN/TURN UDP reachability probes (`-stun`, `-turn`)
 - Structured audit log file: `ka -audit-file path.jsonl`
 
-### Phase 2 — Operator infrastructure *(partial)*
-- Registry backend: JSON (default) or **SQLite** (`ka -sqlite data/ka/registry.db`)
+### Phase 2 — Operator infrastructure *(done in tree)*
+- Registry backend: JSON (default), **SQLite** (`-sqlite`), or **PostgreSQL** (`-postgres`)
 - Minimal admin web UI: **`/admin`** (vouchers, devices, revoke)
-- Still open: PostgreSQL option, agent update check / signed manifests
+- Agent update check: `GET /v1/update/check` + `-update-manifest` (log-only on agent; signing later)
 
 ### Phase 3 — Client UX and transport
 - System tray GUI over local API

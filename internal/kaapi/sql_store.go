@@ -10,10 +10,11 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-// SQLStore is a SQLite-backed registry (Phase 2).
+// SQLStore is a SQL-backed registry (SQLite or PostgreSQL).
 type SQLStore struct {
-	db *sql.DB
-	mu sync.Mutex
+	db      *sql.DB
+	mu      sync.Mutex
+	dialect string // "sqlite" | "postgres"
 }
 
 // OpenSQLStore opens or creates a SQLite database at path.
@@ -23,7 +24,7 @@ func OpenSQLStore(path string) (*SQLStore, error) {
 		return nil, err
 	}
 	db.SetMaxOpenConns(1)
-	s := &SQLStore{db: db}
+	s := &SQLStore{db: db, dialect: "sqlite"}
 	if err := s.migrate(); err != nil {
 		_ = db.Close()
 		return nil, err

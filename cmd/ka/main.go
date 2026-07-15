@@ -24,7 +24,9 @@ func main() {
 	listen := flag.String("listen", envOr("COE_KA_LISTEN", "127.0.0.1:8443"), "listen address")
 	masterFile := flag.String("master", envOr("COE_KA_MASTER_FILE", "data/ka/master.key"), "KA_MASTER file")
 	registry := flag.String("registry", envOr("COE_KA_REGISTRY", "data/ka/registry.json"), "JSON registry path (ignored if -sqlite set)")
-	sqlitePath := flag.String("sqlite", envOr("COE_KA_SQLITE", ""), "SQLite registry path (e.g. data/ka/registry.db); preferred for multi-device")
+	sqlitePath := flag.String("sqlite", envOr("COE_KA_SQLITE", ""), "SQLite registry path (e.g. data/ka/registry.db)")
+	pgDSN := flag.String("postgres", envOr("COE_KA_POSTGRES", ""), "PostgreSQL DSN (overrides -sqlite/-registry)")
+	updateManifest := flag.String("update-manifest", envOr("COE_KA_UPDATE_MANIFEST", ""), "JSON file for GET /v1/update/check")
 	adminTok := flag.String("admin-token", envOr("COE_KA_ADMIN_TOKEN", "dev-admin-token"), "admin bearer token")
 	tlsCert := flag.String("tls-cert", envOr("COE_KA_TLS_CERT", "data/ka/tls/server.crt"), "TLS cert PEM")
 	tlsKey := flag.String("tls-key", envOr("COE_KA_TLS_KEY", "data/ka/tls/server.key"), "TLS key PEM")
@@ -49,7 +51,15 @@ func main() {
 		log.Fatalf("master: %v", err)
 	}
 	var store kaapi.Store
-	if *sqlitePath != "" {
+	switch {
+	case *pgDSN != "":
+		sqlStore, err := kaapi.OpenPostgresStore(*pgDSN)
+		if err != nil {
+			log.Fatalf("postgres: %v", err)
+		}
+		store = sqlStore
+		log.Printf("registry backend postgres")
+	case *sqlitePath != "":
 		if err := os.MkdirAll(filepath.Dir(*sqlitePath), 0o700); err != nil {
 			log.Fatalf("sqlite dir: %v", err)
 		}
@@ -59,13 +69,20 @@ func main() {
 		}
 		store = sqlStore
 		log.Printf("registry backend sqlite %s", *sqlitePath)
-	} else {
+	default:
 		reg, err := kaapi.LoadRegistry(*registry)
 		if err != nil {
 			log.Fatalf("registry: %v", err)
 		}
 		store = reg
 		log.Printf("registry backend json %s", *registry)
+	}
+	upd, err := kaapi.LoadUpdateManifest(*updateManifest)
+	if err != nil {
+		log.Fatalf("update-manifest: %v", err)
+	}
+	if *updateManifest != "" {
+		log.Printf("update manifest %s", *updateManifest)
 	}
 	xo, err := coecrypto.NewXoroshiroFromMaster(master)
 	if err != nil {
@@ -98,6 +115,7 @@ func main() {
 		RequireSignature:  !*noSig,
 		RequireAdminToken: *prod,
 		Limit:             lim,
+		Updates:           upd,
 	}
 
 	handler := srv.HandlerWithLimit()
